@@ -1,3 +1,2 @@
-#!/usr/bin/execlineb -P
-with-contenv
-if -t { s6-test -f /volume/devbox/run-service.sh } /volume/devbox/run-service.sh
+#!/command/execlineb -P
+if -t { test -f /volume/devbox/run-service.sh } /usr/bin/bash /volume/devbox/run-service.sh
