@@ -1,0 +1,2 @@
+#!/command/with-contenv sh
+/ngrok config add-authtoken ${Ngrok}

@@ -1,27 +1,37 @@
-FROM node:20
-RUN apt update -y > /dev/null 2>&1 && apt upgrade -y > /dev/null 2>&1 && apt install locales -y \
-&& localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
-ENV LANG en_US.utf8
+FROM node:22
+
+ARG S6_OVERLAY_VERSION=3.2.1.0
 ARG Ngrok
 ARG Password
 ARG NGROK_DOMAIN
 ENV Password=${Password}
 ENV Ngrok=${Ngrok}
 ENV NGROK_DOMAIN=${NGROK_DOMAIN}
+
 RUN useradd -m -d /volume/devbox -s /bin/bash -G sudo devbox
-RUN npm install -g bun
-RUN apt install ssh wget unzip -y > /dev/null 2>&1
-RUN wget -O ngrok.zip https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.zip > /dev/null 2>&1
-RUN unzip ngrok.zip
-RUN echo "./ngrok config add-authtoken ${Ngrok} &&" >>/1.sh
-RUN echo "./ngrok tcp --remote-addr=${NGROK_DOMAIN} 22 &>/dev/null &" >>/1.sh
-RUN mkdir /run/sshd
-RUN echo '/usr/sbin/sshd -D' >>/1.sh
-RUN echo 'PermitRootLogin yes' >>  /etc/ssh/sshd_config 
-RUN echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config
 RUN echo root:${Password}|chpasswd
 RUN echo devbox:${Password}|chpasswd
-RUN service ssh start
-RUN chmod 755 /1.sh
-EXPOSE 80 8888 8080 443 5130 5131 5132 5133 5134 5135 3306
-CMD  /1.sh
+
+# install ssh and other tools
+RUN apt-get update && apt-get -y install
+RUN apt-get install -y ssh wget unzip xz-utils
+
+RUN echo 'PermitRootLogin yes' >>  /etc/ssh/sshd_config 
+RUN echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config
+
+# install ngrok
+RUN wget -O ngrok.zip https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.zip
+RUN unzip ngrok.zip
+
+# install bun
+RUN npm install -g bun
+
+# install s6-overlay
+ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz /tmp
+ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-x86_64.tar.xz /tmp
+RUN tar -C / -Jxpf /tmp/s6-overlay-noarch.tar.xz
+RUN tar -C / -Jxpf /tmp/s6-overlay-x86_64.tar.xz
+
+COPY etc/s6-overlay/ /etc/s6-overlay
+
+ENTRYPOINT ["/init"]

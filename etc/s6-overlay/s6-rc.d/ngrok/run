@@ -1,0 +1,3 @@
+#!/command/execlineb -P
+with-contenv
+/ngrok tcp --remote-addr=${NGROK_DOMAIN} 22
