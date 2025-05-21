@@ -19,8 +19,7 @@ RUN apt-get install -y ssh wget unzip xz-utils
 RUN echo 'PermitRootLogin yes' >>  /etc/ssh/sshd_config 
 RUN echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config
 
-# start ssh to init the run directory
-RUN service ssh start
+RUN mkdir -p /var/run/sshd
 
 # install ngrok
 RUN wget -O ngrok.zip https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.zip
