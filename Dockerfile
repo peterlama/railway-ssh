@@ -8,7 +8,7 @@ ARG NGROK_DOMAIN
 ENV Password=${Password}
 ENV Ngrok=${Ngrok}
 ENV NGROK_DOMAIN=${NGROK_DOMAIN}
-RUN useradd -ms /bin/bash -G sudo devbox
+RUN useradd -m -d /volume/devbox -s /bin/bash -G sudo devbox
 RUN apt install ssh wget unzip -y > /dev/null 2>&1
 RUN wget -O ngrok.zip https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.zip > /dev/null 2>&1
 RUN unzip ngrok.zip
